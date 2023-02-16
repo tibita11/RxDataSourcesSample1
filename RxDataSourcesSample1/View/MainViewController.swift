@@ -32,15 +32,22 @@ class MainViewController: UIViewController {
     /// DB操作をするViewModel
     var viewModel: ViewModel!
     
+    
+    // MARK: - View Life Cycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         viewModel = ViewModel()
         setupInput()
         setupTableView()
+        setupNavigationBar()
         // DBに保存されているデータを反映
         viewModel.getData()
     }
+    
+    
+    // MARK: - Action
     
     /// 入力処理の初期設定
     private func setupInput() {
@@ -52,12 +59,32 @@ class MainViewController: UIViewController {
     private func setupTableView() {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.contentInset.bottom = 12.0
+        // delegateの設定
+        tableView.rx.setDelegate(self).disposed(by: disposeBag)
         // TableView自動更新
         viewModel.output?.itemsObserver
             .bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
     }
+    
+    /// ナビゲーションバーに関する初期設定
+    private func setupNavigationBar() {
+        navigationItem.rightBarButtonItem = editButtonItem
+    }
+    
+    // 編集ボタンでTableViewを編集状態にする
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        tableView.isEditing = editing
+    }
 
 
 
+}
+
+
+// MARK: - UITableViewDelegate
+
+extension MainViewController: UITableViewDelegate {
+    
 }
