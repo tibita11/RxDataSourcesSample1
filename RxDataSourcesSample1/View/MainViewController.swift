@@ -6,24 +6,56 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import RxDataSources
 
 class MainViewController: UIViewController {
 
+    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var addButton: UIButton!
+    
+    let disposeBag = DisposeBag()
+    // データソース
+    let dataSource = RxTableViewSectionedReloadDataSource<SectionModel>(configureCell: {
+        (dataSource, tableView, indexPath, item) in
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        var config = cell.defaultContentConfiguration()
+        config.text = item.name
+        cell.contentConfiguration = config
+        return cell
+        
+    }, titleForHeaderInSection: {
+        (dataSource, indexPath) in
+        return dataSource.sectionModels[indexPath].header
+    })
+    // DB操作をするViewModel
+    var viewModel: ViewModel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        // Do any additional setup after loading the view.
+        
+        viewModel = ViewModel()
+        setupInput()
+        setupTableView()
+    }
+    
+    /// 入力処理の初期設定
+    private func setupInput() {
+        let input = ViewModelInput(addButton: addButton.rx.tap.asObservable())
+        viewModel.setup(input: input, model: DataStorage())
+    }
+    
+    /// TableViewに関する初期設定
+    private func setupTableView() {
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        tableView.contentInset.bottom = 12.0
+        // TableView自動更新
+        viewModel.output?.itemsObserver
+            .bind(to: tableView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
     }
 
 
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
