@@ -16,7 +16,7 @@ class MainViewController: UIViewController {
     @IBOutlet weak var addButton: UIButton!
     
     let disposeBag = DisposeBag()
-    // データソース
+    /// データソース
     let dataSource = RxTableViewSectionedReloadDataSource<SectionModel>(configureCell: {
         (dataSource, tableView, indexPath, item) in
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
@@ -29,7 +29,7 @@ class MainViewController: UIViewController {
         (dataSource, indexPath) in
         return dataSource.sectionModels[indexPath].header
     })
-    // DB操作をするViewModel
+    /// DB操作をするViewModel
     var viewModel: ViewModel!
     
     override func viewDidLoad() {
@@ -38,12 +38,14 @@ class MainViewController: UIViewController {
         viewModel = ViewModel()
         setupInput()
         setupTableView()
+        // DBに保存されているデータを反映
+        viewModel.getData()
     }
     
     /// 入力処理の初期設定
     private func setupInput() {
         let input = ViewModelInput(addButton: addButton.rx.tap.asObservable())
-        viewModel.setup(input: input, model: DataStorage())
+        viewModel.setup(input: input)
     }
     
     /// TableViewに関する初期設定

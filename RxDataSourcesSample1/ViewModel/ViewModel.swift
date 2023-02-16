@@ -23,13 +23,15 @@ protocol ViewModelOutput {
 
 protocol ViewModelType {
     var output: ViewModelOutput? { get }
-    func setup(input: ViewModelInput, model: DataStorage)
+    func setup(input: ViewModelInput)
 }
 
 
 class ViewModel: ViewModelType {
     
     var output: ViewModelOutput?
+    /// DB操作をするModel
+    var model = DataStorage()
     
     let disposeBag = DisposeBag()
     
@@ -42,7 +44,7 @@ class ViewModel: ViewModelType {
     private var items = BehaviorRelay<[SectionModel]>(value: [])
     
     /// 初期設定
-    func setup(input: ViewModelInput, model: DataStorage) {
+    func setup(input: ViewModelInput) {
         // 新しいSampleDataを追加し、DBに保存する
         input.addButton
             .subscribe(onNext: { [weak self] in
@@ -58,11 +60,32 @@ class ViewModel: ViewModelType {
                     section[0].items.append(newData)
                 }
                 // DBに保存
-                model.saveData(object: section, key: Const.userDefaulsKey)
+                self!.model.saveData(object: section, key: Const.userDefaulsKey)
                 // プロパティを変更
                 self!.items.accept(section)
             })
             .disposed(by: disposeBag)
+    }
+    
+    /// DBから取得する処理
+    func getData() {
+        model.getData(key: Const.userDefaulsKey)
+            .materialize()
+            .subscribe(onNext: { [weak self] event in
+                // event毎に処理
+                switch event {
+                case .next:
+                    self!.items.accept(event.element!)
+                case let .error(error as DBError):
+                    // Errorの場合は返さない
+                    print(error.localizedDescription)
+                case .error, .completed:
+                    // Errorの場合は返さない
+                    break
+                }
+            })
+            .disposed(by: disposeBag)
+        
     }
     
 }
