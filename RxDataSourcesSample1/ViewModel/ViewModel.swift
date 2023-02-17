@@ -14,6 +14,7 @@ import RxCocoa
 struct ViewModelInput {
     let addButton: Observable<Void>
     let itemDeleted: Observable<IndexPath>
+    let itemMoved: Observable<ItemMovedEvent>
 }
 
 /// UI更新処理
@@ -53,11 +54,12 @@ class ViewModel: ViewModelType {
                 var section = self!.items.value
                 if section.count == 0 {
                     // 登録がない場合
-                    let newData = [SectionModel(header: "Section1", items: [SampleData(name: "Sample")])]
+                    let newData = [SectionModel(header: "Section1", items: [SampleData(name: "Sample1")])]
                     section = newData
                 } else {
                     // 登録がある場合
-                    let newData = SampleData(name: "Sample")
+                    let index = section[0].items.count + 1
+                    let newData = SampleData(name: "Sample\(index)")
                     section[0].items.append(newData)
                 }
                 // DBに保存
@@ -77,6 +79,24 @@ class ViewModel: ViewModelType {
                 self!.model.saveData(object: section, key: Const.userDefaulsKey)
                 // プロパティを変更
                 self!.items.accept(section)
+            })
+            .disposed(by: disposeBag)
+        
+        // sourceIndex番目を削除し、destinationIndex番目に挿入する
+        input.itemMoved
+            .subscribe(onNext: { [weak self] move in
+                let sourceIndex = move.sourceIndex
+                let distinationIndex = move.destinationIndex
+                // 削除・挿入
+                var section = self!.items.value
+                let sampleData = section[sourceIndex.section].items[sourceIndex.row]
+                section[sourceIndex.section].items.remove(at: sourceIndex.row)
+                section[distinationIndex.section].items.insert(sampleData, at: distinationIndex.row)
+                // DBに保存
+                self!.model.saveData(object: section, key: Const.userDefaulsKey)
+                // プロパティを変更
+                self!.items.accept(section)
+
             })
             .disposed(by: disposeBag)
     }
