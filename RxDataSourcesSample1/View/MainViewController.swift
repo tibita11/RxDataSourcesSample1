@@ -93,7 +93,7 @@ extension MainViewController: UITableViewDelegate {
         // headerViewをカスタマイズ
         let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "TableHeaderView")
         if let headerView = view as? TableHeaderView {
-            headerView.setup(sectionName: dataSource.sectionModels[section].header)
+            headerView.setup(sectionName: dataSource.sectionModels[section].header, viewModel: viewModel)
             return headerView
         }
         return nil

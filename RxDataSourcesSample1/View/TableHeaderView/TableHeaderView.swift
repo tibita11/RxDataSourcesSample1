@@ -6,22 +6,26 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
 
 class TableHeaderView: UITableViewHeaderFooterView {
 
     @IBOutlet weak var headerImage: UIImageView!
     @IBOutlet weak var headerLabel: UILabel!
     @IBOutlet weak var swiftButton: UIButton!
+    var viewModel: ViewModel!
     
-    func setup(sectionName: String) {
+    func setup(sectionName: String, viewModel: ViewModel) {
         headerImage.image = UIImage(systemName: "swift")
         headerLabel.text = sectionName
         swiftButton.layer.cornerRadius = 5
+        // タップで新規データを保存する
+        self.viewModel = viewModel
         swiftButton.addTarget(self, action: #selector(tapSwift), for: .touchUpInside)
     }
     
-    @objc private func tapSwift() {
-        print("Swiftボタンをタップしました。")
+    @objc func tapSwift() {
+        viewModel.addSwiftData()
     }
-
 }

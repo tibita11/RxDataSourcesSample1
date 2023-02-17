@@ -101,6 +101,18 @@ class ViewModel: ViewModelType {
             .disposed(by: disposeBag)
     }
     
+    /// DBにSwiftデータを保存する処理
+    func addSwiftData() {
+        var section = items.value
+        let newData = SampleData(name: "Lets'Swift")
+        section[0].items.append(newData)
+        // DBに保存
+        model.saveData(object: section, key: Const.userDefaulsKey)
+        // プロパティを変更
+        items.accept(section)
+    }
+    
+    
     /// DBから取得する処理
     func getData() {
         model.getData(key: Const.userDefaulsKey)
