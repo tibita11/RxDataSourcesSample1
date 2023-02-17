@@ -51,7 +51,7 @@ class MainViewController: UIViewController {
     
     /// 入力処理の初期設定
     private func setupInput() {
-        let input = ViewModelInput(addButton: addButton.rx.tap.asObservable())
+        let input = ViewModelInput(addButton: addButton.rx.tap.asObservable(), itemDeleted: tableView.rx.itemDeleted.asObservable())
         viewModel.setup(input: input)
     }
     

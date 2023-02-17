@@ -13,6 +13,7 @@ import RxCocoa
 /// 通知処理
 struct ViewModelInput {
     let addButton: Observable<Void>
+    let itemDeleted: Observable<IndexPath>
 }
 
 /// UI更新処理
@@ -59,6 +60,19 @@ class ViewModel: ViewModelType {
                     let newData = SampleData(name: "Sample")
                     section[0].items.append(newData)
                 }
+                // DBに保存
+                self!.model.saveData(object: section, key: Const.userDefaulsKey)
+                // プロパティを変更
+                self!.items.accept(section)
+            })
+            .disposed(by: disposeBag)
+        
+        // Index番目を削除し、DBに保存する
+        input.itemDeleted
+            .subscribe(onNext: { [weak self] index in
+                // 前回値を取得してindex番目を削除
+                var section = self!.items.value
+                section[index.section].items.remove(at: index.row)
                 // DBに保存
                 self!.model.saveData(object: section, key: Const.userDefaulsKey)
                 // プロパティを変更
