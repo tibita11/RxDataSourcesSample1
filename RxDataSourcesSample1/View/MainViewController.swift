@@ -24,11 +24,12 @@ class MainViewController: UIViewController {
         config.text = item.name
         cell.contentConfiguration = config
         return cell
-        
-    }, titleForHeaderInSection: {
-        (dataSource, indexPath) in
-        return dataSource.sectionModels[indexPath].header
     })
+    // headerのタイトルを変えるだけならば下記で良い
+//    }, titleForHeaderInSection: {
+//        (dataSource, indexPath) in
+//        return dataSource.sectionModels[indexPath].header
+//    })
     /// DB操作をするViewModel
     var viewModel: ViewModel!
     
@@ -58,6 +59,8 @@ class MainViewController: UIViewController {
     /// TableViewに関する初期設定
     private func setupTableView() {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        // headerをカスタマイズ
+        tableView.register(UINib(nibName: "TableHeaderView", bundle: nil), forHeaderFooterViewReuseIdentifier: "TableHeaderView")
         tableView.contentInset.bottom = 12.0
         // delegateの設定
         tableView.rx.setDelegate(self).disposed(by: disposeBag)
@@ -86,5 +89,19 @@ class MainViewController: UIViewController {
 // MARK: - UITableViewDelegate
 
 extension MainViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        // headerViewをカスタマイズ
+        let view = tableView.dequeueReusableHeaderFooterView(withIdentifier: "TableHeaderView")
+        if let headerView = view as? TableHeaderView {
+            headerView.setup(sectionName: dataSource.sectionModels[section].header)
+            return headerView
+        }
+        return nil
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        // headerの高さを変更
+        return 40.0
+    }
     
 }
